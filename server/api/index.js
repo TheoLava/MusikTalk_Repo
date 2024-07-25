@@ -33,7 +33,7 @@ const UsersSchema = new mongoose.Schema({
     name: String    
 });
 
-const UserModel = mongoose.model("Users", UsersSchema)
+const UserModel = mongoose.model("users", UsersSchema)
 
 //Middleware
 app.use(cors());
@@ -41,11 +41,13 @@ app.use(express.json()); // Middleware pour parser le JSON
 
 // Route pour obtenir les utilisateurs
 app.get("/getUsers",async (req,res) => {
+    console.log('Received GET request on /getUsers');
     try {
         const users = await UserModel.find({});
+        console.log('Users found:', users);
         res.json(users);
     } catch (err) {
-        console.error(err);
+        console.error('Error fetching users:',err);
         res.status(500).send('Internal Server Error');
     }
 });
