@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require("mongoose");
 const cors = require('cors');
+const { escape } = require('validator');
 const winston = require('winston');
 
 const app = express();
@@ -29,8 +30,9 @@ console.error('Error connecting to MongoDB:', err);
 
 // Définition du schéma et du modèle
 const UsersSchema = new mongoose.Schema({
-    age: Number,
-    name: String    
+    password:String,
+    user_id:String,
+    username: String    
 });
 
 const UserModel = mongoose.model("users", UsersSchema)
@@ -40,12 +42,13 @@ app.use(cors());
 app.use(express.json()); // Middleware pour parser le JSON
 
 // Route pour obtenir les utilisateurs
-app.get("/getUsers",async (req,res) => {
-    console.log('Received GET request on /getUsers');
+app.post("/signup",async (req,res) => {
+    console.log('Received POST request on /addUsers');
     try {
-        const users = await UserModel.find({});
-        console.log('Users found:', users);
-        res.json(users);
+        const username = escape(req.body.username); // Supposons que la liste d'utilisateurs est envoyée dans le corps de la requête
+        const password = escape(req.body.password);
+        const result = await UserModel.insertone({username:username, password:password});
+        res.status(201).json(result);
     } catch (err) {
         console.error('Error fetching users:',err);
         res.status(500).send('Internal Server Error');
