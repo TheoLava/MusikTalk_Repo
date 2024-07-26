@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require("mongoose");
 const cors = require('cors');
 const { escape } = require('validator');
+const bodyParser = require('body-parser');
 const winston = require('winston');
 
 const app = express();
@@ -38,17 +39,20 @@ const UsersSchema = new mongoose.Schema({
 const UserModel = mongoose.model("users", UsersSchema)
 
 //Middleware
+app.use(bodyParser.urlencoded({extended:false}));
+app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json()); // Middleware pour parser le JSON
 
 // Route pour obtenir les utilisateurs
 app.post("/signup",async (req,res) => {
-    console.log('Received POST request on /addUsers');
+    console.log('Received POST request on /signup');
+    const username = escape(req.body.username); // Supposons que la liste d'utilisateurs est envoyée dans le corps de la requête
+    const password = escape(req.body.password);
     try {
-        const username = escape(req.body.username); // Supposons que la liste d'utilisateurs est envoyée dans le corps de la requête
-        const password = escape(req.body.password);
-        const result = await UserModel.insertone({username:username, password:password});
-        res.status(201).json(result);
+        const newUser = new UserModel({ username, password });
+        const result = await newUser.save();
+        res.status(201).json({username: result.username});
     } catch (err) {
         console.error('Error fetching users:',err);
         res.status(500).send('Internal Server Error');
